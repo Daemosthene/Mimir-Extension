@@ -15,7 +15,7 @@ Mimir is a lightweight browser extension that brings intelligent AI tools direct
 ## installation
 
 1. **Download the latest release ZIP** from this repository:
-   - [Releases »](#) *(https://github.com/Daemosthene/Mimir-Extension/releases/tag/v1.0.0)*
+   - [Releases »](https://github.com/Daemosthene/Mimir-Extension/releases/tag/v1.0.0)
 
 2. **Unzip the file** somewhere on your computer.
 
