@@ -1,6 +1,6 @@
 # Mimir – Your In-Browser AI Assistant
 
-Mimir is a lightweight browser extension that brings intelligent AI tools directly into your writing, studying, and research environments — like Google Docs, Notion, and more.
+Mimir is a lightweight browser extension that brings intelligent AI tools directly into your writing, studying, and research environments.
 
 ## What Mimir Can Do
 
@@ -48,9 +48,10 @@ Mimir is a lightweight browser extension that brings intelligent AI tools direct
 - `extensionLogo.png`
 - and other static assets
 
-## 💡 Notes
+## Notes
 
 No account or signup required
+Premium version unlocks all features aswell as eliminates all daily restrictions
 Your data is never stored — all processing is client-side except API calls to OpenAI
 
 Official Site: https://mimir-extension.vercel.app/
