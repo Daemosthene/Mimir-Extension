@@ -54,7 +54,9 @@ No account or signup required, premium removes daily limitations and unlocks all
 Your data is never stored — all processing is client-side except API calls to OpenAI
 
 
-Email: **Mimir.Extension@proton.me**
+Official Site: https://mimir-extension.vercel.app/
+Privacy Policy: https://mimir-privacy-policy.vercel.app/
+Support Email: **Mimir.Extension@proton.me**
 Twitter: [@Daemosthene](https://x.com/Daemosthene)
 
 ---
