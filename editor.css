@@ -1,0 +1,150 @@
+/* Base editor styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #1F1F1F;
+  color: #fff;
+}
+
+h1, h2 {
+  color: #4287f5;
+}
+
+/* Editor container */
+#editor {
+  width: 100%;
+  min-height: 300px;
+  border: 1px solid #444;
+  padding: 15px;
+  box-sizing: border-box;
+  background-color: #333;
+  margin-bottom: 15px;
+  outline: none;
+  overflow-y: auto;
+  color: #fff;
+}
+
+/* Toolbar styles */
+#toolbar {
+  padding: 10px 0;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #444;
+}
+
+#toolbar button {
+  background-color: #333;
+  border: 1px solid #444;
+  border-radius: 3px;
+  padding: 5px 10px;
+  margin-right: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  color: #fff;
+}
+
+#toolbar button:hover {
+  background-color: #444;
+}
+
+/* Manual prompt input */
+#manualPrompt {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+#promptInput {
+  padding: 8px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  flex: 1;
+  background-color: #333;
+  color: #fff;
+}
+
+#generateBtn {
+  background-color: #4287f5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 15px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#generateBtn:hover {
+  background-color: #3267c5;
+}
+
+/* Text formatting */
+.bold { font-weight: bold; }
+.italic { font-style: italic; }
+.underline { text-decoration: underline; }
+
+/* Alignment classes */
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-justify { text-align: justify; }
+
+/* Line spacing */
+.single-space { line-height: 1.0; }
+.one-half-space { line-height: 1.5; }
+.double-space { line-height: 2.0; }
+
+/* Popup-specific styles */
+#promptSection {
+  background-color: #2a2a2a;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+#promptInput {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #444;
+  background-color: #333;
+  color: #fff;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-family: Arial, sans-serif;
+  resize: vertical;
+}
+
+#generatePromptBtn, #editResponseBtn {
+  background-color: #4287f5;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#generatePromptBtn:hover, #editResponseBtn:hover {
+  background-color: #3267c5;
+}
+
+#cancelPromptBtn {
+  background-color: #555;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#cancelPromptBtn:hover {
+  background-color: #444;
+}
+
+#result {
+  white-space: pre-wrap;
+  font-family: Arial, sans-serif;
+  line-height: 1.4;
+}

@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Mimir</title>
+  <style>
+    body, .action-button, .mimir-header {
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    :root {
+      --accent-color: #4287f5; /* default */
+    }
+        
+    body {
+      font-family: 'norse.bold', sans-serif;
+      font-size: 20px;
+      width: 360px;
+      margin: 0;
+      padding: 0;
+      background: #1F1F1F;
+      color: var(--accent-color);
+    }
+
+    .view {
+      display: none;
+      padding: 10px;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .slide-in-right {
+      animation: slideInRight 0.3s forwards;
+    }
+
+    .slide-in-left {
+      animation: slideInLeft 0.3s forwards;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+    
+    @font-face {
+      font-family: 'norse.bold';
+      src: url('norse.bold.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'RobotoCondensedMediumItalic';
+      src: url('RobotoCondensed-MediumItalic.ttf') format('truetype');
+      font-weight: normal;
+      font-style: italic;
+    }
+    #header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    #top-controls {
+      display: flex;
+      align-items: center;
+    }
+
+    #openSettings {
+      font-size: 13px;
+      background: none;
+      border: none;
+      color: var(--accent-color);
+      cursor: pointer;
+      margin-top: -26px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .tool {
+      margin: 10px 0;
+    }
+
+    .tool-header {
+      display: flex;
+      align-items: center;
+      position: relative; /* Add this for absolute positioning context */
+    }
+
+    .action-button {
+      flex-grow: 1;
+      background-color: var(--accent-color);
+      color: #ffffff;
+      border: none;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 4px;
+    }
+
+    .description {
+      display: none;
+      padding: 6px;
+      font-size: 13px;
+      color: #ffffff;
+      font-family: sans-serif;
+    }
+
+    .description.open {
+      display: block;
+    }
+
+    #result {
+      margin-top: 10px;
+      font-size: 18px;
+      white-space: pre-wrap;
+      font-family: sans-serif;
+      color: #ffffff;
+    }
+
+    /* Replace spinner with loading wave animation - From Uiverse.io by mrpumps31232 */
+    .loading-wave {
+      width: 50px; /* Reduced from 100px to make it smaller */
+      height: 25px; /* Reduced from 40px to make it smaller */
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      margin-left: auto;
+    }
+
+    .loading-bar {
+      width: 4px; /* Smaller bars for UI */
+      height: 3px; /* Starting height */
+      margin: 0 1px; /* Reduced margins between bars */
+      background-color: var(--accent-color); /* Use theme color */
+      border-radius: 2px;
+      animation: loading-wave-animation 1s ease-in-out infinite;
+      display: block !important; /* Force display */
+    }
+
+    .loading-bar:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .loading-bar:nth-child(3) {
+      animation-delay: 0.2s;
+    }
+
+    .loading-bar:nth-child(4) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes loading-wave-animation {
+      0% {
+        height: 3px;
+      }
+
+      50% {
+        height: 15px; /* Reduced peak height */
+      }
+
+      100% {
+        height: 3px;
+      }
+    }
+
+    /* Adjust positioning for tool spinners */
+    .tool .mimir-spinner {
+      position: absolute; /* Position absolutely */
+      left: 5px; /* Move to a more visible position */
+      top: 50%; /* Center vertically */
+      transform: translateY(-50%);
+      margin: 0;
+      z-index: 10; /* Ensure it appears above other elements */
+      display: none; /* Hide by default */
+    }
+
+    .tool .mimir-spinner .loading-wave {
+      margin: 0; /* Remove any margins */
+      width: 40px; /* Make it smaller */
+      height: 16px; /* Make it smaller */
+      display: flex; /* Ensure flexbox works */
+      justify-content: center;
+      align-items: flex-end;
+    }
+    
+    /* Add padding to the left of the tool header to make space for spinner */
+    .tool-header {
+      position: relative;
+      padding-left: 0; /* Default padding */
+      transition: padding-left 0.2s ease; /* Smooth transition */
+      display: flex;
+      align-items: center;
+    }
+    
+    .tool-header.loading {
+      padding-left: 50px; /* Add padding when loading to make space */
+    }
+    
+    /* Adjust the toggle button transition */
+    .toggle-description {
+      transition: width 0.2s ease, padding 0.2s ease;
+    }
+    
+    /* Make buttons smaller when loading */
+    .tool-header.loading .toggle-description {
+      padding: 6px 6px; /* Reduce padding */
+    }
+    
+    /* Make action button adjust as well */
+    .tool-header.loading .action-button {
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+
+    .setting-description {
+      font-size: 13px;
+      margin-top: 4px;
+      display: none;
+      color: #444;
+    }
+
+    .setting-description.open {
+      display: block;
+    }
+
+    .toggle-arrow {
+      cursor: pointer;
+      color: var(--accent-color);
+      font-size: 14px;
+      margin-left: 8px;
+    }
+    
+    .mimir-sidebar-title {
+      font-family: 'norse.bold.otf', sans-serif;
+      font-size: 24px;
+      font-weight: normal;
+      margin: 0;
+      padding: 0;
+      color: var(--accent-color);
+    }
+    .divider {
+      font-size: 16px;
+      color: #555;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      margin-top: -26px;
+    }    
+    
+    /* Add new styling for the top buttons container */
+    #topButtonsContainer {
+      display: flex;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+    
+    /* Adjust button styling */
+    #enterPromptBtn, #editResponseBtn {
+      flex: 1;
+      background-color: var(--accent-color);
+      color: white;
+      font-weight: bold;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    #editResponseBtn {
+      background-color: #555;
+    }
+
+    /* Custom Blink search bar styling - From Uiverse.io by boryanakrasteva, adapted for Mimir */
+    .input-container {
+      width: 100%;
+      position: relative;
+      margin-bottom: 10px;
+      padding-right: 5px; /* Add padding to prevent right-side clipping */
+      box-sizing: border-box;
+    }
+
+    .icon {
+      position: absolute;
+      right: 10px;
+      top: calc(50%);
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+    
+    .icon svg {
+      fill: var(--accent-color);
+      stroke: var(--accent-color);
+    }
+
+    .input {
+      width: 100%;
+      height: 26px; /* Reduced height from 30px to 26px */
+      padding: 4px 30px 4px 10px; /* Default padding */
+      transition: transform 0.3s ease, box-shadow 0.2s linear, border 0.2s linear; /* Add transform transition */
+      border: 2px solid #444;
+      background-color: #333;
+      color: #fff;
+      font-size: 14px;
+      letter-spacing: 1px;
+      border-radius: 4px;
+      box-sizing: border-box;
+      position: relative; /* Add position relative */
+    }
+    
+    /* Position the spinner to the left */
+    .input-container .mimir-spinner {
+      position: absolute;
+      left: -30px; /* Move further to the left */
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      transition: opacity 0.3s ease, left 0.3s ease; /* Add transition for left */
+      opacity: 0;
+    }
+    
+    /* Show spinner when container has with-spinner class and position it */
+    .input-container.with-spinner .mimir-spinner {
+      opacity: 1;
+      left: 12px; /* Position further to the right when visible - increased from 6px */
+    }
+    
+    /* Add class for when spinner is shown */
+    .input-container.with-spinner .input {
+      transform: translateX(36px); /* Increase slide distance to match new spinner position */
+    }
+
+    .input:focus {
+      outline: none;
+      border: 0.5px solid var(--accent-color);
+      box-shadow: -3px -3px 0px var(--accent-color);
+    }
+
+    /* Button text animation styles */
+    button .span-mother {
+      display: flex;
+      overflow: hidden;
+    }
+
+    button:hover .span-mother {
+      position: absolute;
+    }
+
+    button:hover .span-mother span {
+      transform: translateY(1.2em);
+    }
+
+    button .span-mother span:nth-child(1) {
+      transition: 0.2s;
+    }
+
+    button .span-mother span:nth-child(2) {
+      transition: 0.3s;
+    }
+
+    button .span-mother span:nth-child(3) {
+      transition: 0.4s;
+    }
+
+    button .span-mother span:nth-child(4) {
+      transition: 0.5s;
+    }
+
+    button .span-mother span:nth-child(5) {
+      transition: 0.6s;
+    }
+
+    button .span-mother span:nth-child(6) {
+      transition: 0.7s;
+    }
+
+    button .span-mother span:nth-child(n+7) {
+      transition: 0.7s; /* For words longer than 6 characters */
+    }
+
+    button .span-mother2 {
+      display: flex;
+      position: absolute;
+      overflow: hidden;
+    }
+
+    button .span-mother2 span {
+      transform: translateY(-1.2em);
+    }
+
+    button:hover .span-mother2 span {
+      transform: translateY(0);
+    }
+
+    button .span-mother2 span {
+      transition: 0.2s;
+    }
+
+    button .span-mother2 span:nth-child(2) {
+      transition: 0.3s;
+    }
+
+    button .span-mother2 span:nth-child(3) {
+      transition: 0.4s;
+    }
+
+    button .span-mother2 span:nth-child(4) {
+      transition: 0.5s;
+    }
+
+    button .span-mother2 span:nth-child(5) {
+      transition: 0.6s;
+    }
+
+    button .span-mother2 span:nth-child(6) {
+      transition: 0.7s;
+    }
+
+    button .span-mother2 span:nth-child(n+7) {
+      transition: 0.7s; /* For words longer than 6 characters */
+    }
+    
+    /* Fix for buttons keeping their dimensions during hover */
+    button {
+      position: relative; /* Add positioning context for absolute children */
+    }
+    
+    .action-button, #enterPromptBtn, #editTextBtn, #generatePromptBtn, #cancelPromptBtn, #editResponseBtn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 30px; /* Ensure minimum height */
+    }
+    
+    .action-button .span-mother, 
+    .action-button .span-mother2,
+    #enterPromptBtn .span-mother, 
+    #enterPromptBtn .span-mother2,
+    #editTextBtn .span-mother, 
+    #editTextBtn .span-mother2,
+    #generatePromptBtn .span-mother, 
+    #generatePromptBtn .span-mother2,
+    #cancelPromptBtn .span-mother, 
+    #cancelPromptBtn .span-mother2,
+    #editResponseBtn .span-mother, 
+    #editResponseBtn .span-mother2 {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    /* Fix spacing between characters in animated buttons */
+    button .span-mother,
+    button .span-mother2 {
+      letter-spacing: normal;
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+      color: inherit;
+    }
+    
+    button .span-mother span,
+    button .span-mother2 span {
+      display: inline-block;
+      margin-right: 0.05em; /* Small spacing between letters */
+      white-space: pre; /* Preserve spaces */
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+    }
+    
+    /* Special handling for specific buttons with long text */
+    .action-button[data-action="Explain Like I'm 5"] .span-mother span,
+    .action-button[data-action="Explain Like I'm 5"] .span-mother2 span,
+    .action-button[data-action="Turn Professional"] .span-mother span,
+    .action-button[data-action="Turn Professional"] .span-mother2 span,
+    .action-button[data-action="Socratic Review"] .span-mother span,
+    .action-button[data-action="Socratic Review"] .span-mother2 span,
+    .action-button[data-action="Daily Brief"] .span-mother span,
+    .action-button[data-action="Daily Brief"] .span-mother2 span,
+    .action-button[data-action="Citation Finder"] .span-mother span,
+    .action-button[data-action="Citation Finder"] .span-mother2 span,
+    .action-button[data-action="Flashcard Generator"] .span-mother span,
+    .action-button[data-action="Flashcard Generator"] .span-mother2 span,
+    .action-button[data-action="Translate Text"] .span-mother span,
+    .action-button[data-action="Translate Text"] .span-mother2 span,
+    .action-button[data-action="Upload Image"] .span-mother span,
+    .action-button[data-action="Upload Image"] .span-mother2 span,
+    .action-button[data-action="Capture Image"] .span-mother span,
+    .action-button[data-action="Capture Image"] .span-mother2 span {
+      margin-right: 0.1em; /* More spacing for longer button texts */
+    }
+    
+    #enterPromptBtn .span-mother span,
+    #enterPromptBtn .span-mother2 span,
+    #editTextBtn .span-mother span,
+    #editTextBtn .span-mother2 span {
+      margin-right: 0.1em; /* More spacing for top buttons */
+    }
+    
+    /* Add specific fixes for Enter Prompt and Edit Text buttons to prevent text movement */
+    #enterPromptBtn .span-mother,
+    #enterPromptBtn .span-mother2,
+    #editTextBtn .span-mother,
+    #editTextBtn .span-mother2 {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      top: 0;
+      left: 0;
+    }
+    
+    /* Make sure both visible and hidden text states maintain alignment */
+    #enterPromptBtn:hover .span-mother,
+    #editTextBtn:hover .span-mother {
+      transform: none;
+      opacity: 0;
+    }
+    
+    #enterPromptBtn .span-mother2 span,
+    #editTextBtn .span-mother2 span {
+      transform: translateY(0);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    
+    #enterPromptBtn:hover .span-mother2 span,
+    #editTextBtn:hover .span-mother2 span {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* Additional style to ensure text stays centered for the special buttons */
+    #enterPromptBtn, #editTextBtn, #sidebarModeBtn, #openSettings {
+      display: flex;
+      align-items: center; 
+      justify-content: center;
+      text-align: center;
+    }
+    
+    /* Restore font styles for buttons */
+    .action-button .span-mother, 
+    .action-button .span-mother2 {
+      font-size: 14px;
+      font-weight: normal;
+      font-family: inherit;
+    }
+    
+    #enterPromptBtn .span-mother, 
+    #enterPromptBtn .span-mother2,
+    #editTextBtn .span-mother, 
+    #editTextBtn .span-mother2,
+    #editResponseBtn .span-mother, 
+    #editResponseBtn .span-mother2 {
+      font-weight: bold;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    /* Settings view styles */
+    #settingsHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .back-button {
+      background: none;
+      border: none;
+      color: var(--accent-color);
+      cursor: pointer;
+      font-size: 20px;
+      padding: 0;
+      margin-right: 5px;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .back-button:hover {
+      transform: scale(1.2);
+      color: var(--accent-color) !important;
+    }
+
+    .settings-title {
+      font-size: 22px;
+      margin: 0;
+      color: var(--accent-color);
+      font-family: sans-serif;
+    }
+
+    .setting-block {
+      margin-bottom: 15px;
+    }
+
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+    }
+
+    .label {
+      font-size: 14px;
+      color: #ddd;
+      margin-right: 10px;
+      flex: 1;
+      font-family: sans-serif;
+    }
+
+    .checkbox {
+      flex: 2;
+      padding: 4px 8px;
+      border: 1px solid #444;
+      background-color: #333;
+      color: #fff;
+      border-radius: 4px;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .checkbox:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--accent-color);
+    }
+
+    .checkbox option {
+      background-color: #333;
+      color: #fff;
+    }
+
+    #header h2 {
+      margin: 0;
+      text-align: left;
+      display: inline-block;
+    }
+
+    #tagline {
+      font-family: 'RobotoCondensedMediumItalic', sans-serif;
+      font-size: 12px;
+      color: #888;
+      margin-left: 4px; /* Reduced from 8px to move closer */
+      align-self: center;
+      white-space: nowrap;
+      display: flex;
+      align-items: center; /* Ensure vertical centering */
+    }
+
+    /* Hide blink search bar and top buttons when prompt section is visible */
+    #promptSection:target ~ #topButtonsContainer,
+    #promptSection:target ~ .input-container {
+      display: none !important;
+    }
+
+    /* Limit textarea horizontal resizing on enter prompt page */
+    #promptSection textarea {
+      resize: vertical; /* Allow only vertical resizing */
+      max-width: 100%;  /* Prevent expanding wider than container */
+      box-sizing: border-box; /* Include padding and border in width */
+    }
+  </style>
+</head>
+<body>
+  <div id="toolsView" class="view active">
+    <div id="header">
+      <div style="display: flex; align-items: center; gap: 4px;"> <!-- gap reduced from 8px -->
+        <h2 style="margin: 0; text-align: left;">Mimir</h2>
+        <span id="tagline"><em>Think faster. Work smarter.</em></span>
+      </div>
+      <div id="top-controls">
+        <span class="divider" style="display:none;">|</span>
+        <button id="openSettings" class="text-button">Settings</button>
+      </div>
+    </div>
+    
+    <!-- Wrap blink search bar in a container with id for CSS targeting -->
+    <div class="input-container" id="blinkSearchContainer">
+      <!-- blink search bar -->
+      <div id="blinkSpinner" class="mimir-spinner" style="display: none; position: absolute; left: -30px; top: 50%; transform: translateY(-50%); z-index: 2;">
+        <div class="loading-wave">
+          <div class="loading-bar"></div>
+          <div class="loading-bar"></div>
+          <div class="loading-bar"></div>
+          <div class="loading-bar"></div>
+        </div>
+      </div>
+      <input type="text" id="blinkSearch" class="input" placeholder="Blink: Ask for a quick answer...">
+      <span class="icon" id="blinkIcon">
+        <svg width="16px" height="16px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+          <g id="SVGRepo_iconCarrier">
+            <path opacity="1" d="M14 5H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path opacity="1" d="M14 8H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M21 11.5C21 16.75 16.75 21 11.5 21C6.25 21 2 16.75 2 11.5C2 6.25 6.25 2 11.5 2" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+            <path opacity="1" d="M22 22L20 20" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          </g>
+        </svg>
+      </span>
+    </div>
+    
+    <div id="promptSection" style="margin-top: 10px; margin-bottom: 10px; display: none;">
+      <p style="font-size: 12px; color: #aaa; margin: 0 0 5px 0; font-family: sans-serif;">Enter an essay prompt or multiple choice question</p>
+      <textarea id="promptInput" placeholder="Enter your essay prompt or question here..." 
+        style="width: 100%; min-height: 80px; padding: 8px; box-sizing: border-box; border: 1px solid #444; 
+        background-color: #333; color: #fff; border-radius: 4px; margin-bottom: 10px;"></textarea>
+      <div style="display: flex; justify-content: space-between;">
+        <button id="generatePromptBtn" style="background-color: var(--accent-color); color: white; border: none; 
+          padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">Generate Response</button>
+        <button id="cancelPromptBtn" style="background-color: #555; color: white; border: none; 
+          padding: 6px 12px; border-radius: 4px; cursor: pointer;">Cancel</button>
+      </div>
+    </div>
+    
+    <!-- top buttons container -->
+    <div id="topButtonsContainer" style="display: flex; gap: 8px; margin-top: 10px; margin-bottom: 10px;">
+      <button id="enterPromptBtn" style="
+            flex: 0.5;
+            background-color: var(--accent-color);
+            color: white;
+            font-weight: bold;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: block;
+      ">
+        📝 Enter Prompt  
+      </button>
+      <button id="editTextBtn" style="
+            flex: 0.5;
+            background-color: var(--accent-color);
+            color: white;
+            font-weight: bold;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: block;
+      ">
+        ✏️ Edit Text
+      </button>
+      <button id="editResponseBtn" style="
+            flex: 1;
+            background-color: #555;
+            color: white;
+            font-weight: bold;
+            padding: 6px 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+      ">
+        ✏️ Edit Response
+      </button>
+    </div>
+    <div id="buttons"></div>
+    <div id="result"></div>
+  </div>
+
+  <div id="settingsView" class="view">
+    <div id="settingsHeader">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button id="backToTools" class="back-button" style="background: none; border: none; color: var(--accent-color); cursor: pointer; font-size: 20px; padding: 0; margin-right: 5px;">←</button>
+        <h2 class="settings-title">Settings</h2>
+      </div>
+    </div>
+
+    <div class="setting-block" id="themeSetting">
+      <div class="setting-row">
+        <label class="label" for="themeSelector">Theme Color</label>
+        <select id="themeSelector" class="checkbox">
+          <option value="default">Default</option>
+          <option value="red">Red</option>
+          <option value="orange">Orange</option>
+          <option value="darkblue">Dark Blue</option>
+          <option value="green">Green</option>
+          <option value="purple">Purple</option>
+          <option value="teal">Teal</option>
+          <option value="yellow">Yellow</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
