@@ -3,7 +3,7 @@ const FREE_LIMIT = 5;
 
 const gatedTools = [
   "Turn Professional", "Socratic Review", "Daily Brief", "Citation Finder",
-  "Flashcard Generator", "Upload Image", "Enter Prompt", "Blink"
+  "Flashcard Generator", "Upload Image", "Enter Prompt", "Blink", "AI Detector"
 ];
 
 // Only allow 1 use per day for gated tools, unlimited for Pro
@@ -11,8 +11,14 @@ async function checkAccess(toolName) {
   const today = new Date().toISOString().split('T')[0];
 
   return new Promise((resolve) => {
-    chrome.storage.local.get(["usage", "isProUser"], (data) => {
-      const { usage = {}, isProUser = false } = data;
+    chrome.storage.local.get(["usage", "isProUser", "isAdminMode"], (data) => {
+      const { usage = {}, isProUser = false, isAdminMode = false } = data;
+
+      // Check for admin mode first - bypass all restrictions
+      if (isAdminMode) {
+        console.log("🔥 BACKGROUND ADMIN MODE: Bypassing usage restrictions for", toolName);
+        return resolve(true);
+      }
 
       if (isProUser) return resolve(true); // No gating for Pro
 
@@ -224,67 +230,143 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
     }
     
+    console.log("🔥 Background: Processing request to", url);
+    console.log("🔥 Background: Request body:", JSON.stringify(body, null, 2));
+    
     // Add timeout to prevent hanging requests
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
     
-    fetch(url, {
+    // Handle different request types
+    let fetchOptions = {
       method: method || 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body || {}),
       signal: controller.signal
-    })
-    .then(response => {
-      clearTimeout(timeoutId);
+    };
+    
+    // Check if this is an image upload request
+    if (body && body.imageData && body.action === "Upload Image") {
+      // Convert base64 back to FormData for image uploads
+      fetch(body.imageData)
+        .then(res => res.blob())
+        .then(blob => {
+          const formData = new FormData();
+          formData.append('image', blob, 'upload.png');
+          
+          fetchOptions.body = formData;
+          
+          return fetch(url, fetchOptions);
+        })
+        .then(response => {
+          clearTimeout(timeoutId);
+          console.log("🔥 Background: Response status:", response.status);
+          
+          if (!response.ok) {
+            console.error(`🔥 Background: Proxy API request failed with status: ${response.status}`);
+            throw new Error(`API request failed with status: ${response.status} ${response.statusText}`);
+          }
+          
+          return response.json().catch(err => {
+            console.error("🔥 Background: Error parsing JSON response", err);
+            throw new Error("Invalid JSON response from API");
+          });
+        })
+        .then(data => {
+          console.log("🔥 Background: Proxy API request success", data);
+          
+          if (!data) {
+            sendResponse({ success: false, error: "Empty response from API" });
+            return;
+          }
+          
+          sendResponse({ success: true, data });
+        })
+        .catch(error => {
+          clearTimeout(timeoutId);
+          console.error("🔥 Background: Proxy API request error", error);
+          
+          let errorMessage = error.message || "Unknown error occurred";
+          
+          if (error.name === 'AbortError') {
+            errorMessage = "Request timed out after 30 seconds";
+          } else if (errorMessage.includes('NetworkError')) {
+            errorMessage = "Network error: Please check your internet connection";
+          }
+          
+          sendResponse({ 
+            success: false, 
+            error: errorMessage,
+            details: {
+              name: error.name,
+              message: error.message,
+              stack: error.stack
+            }
+          });
+        });
+    } else {
+      // Handle regular JSON requests
+      fetchOptions.headers = {
+        'Content-Type': 'application/json'
+      };
+      fetchOptions.body = JSON.stringify(body || {});
       
-      if (!response.ok) {
-        console.error(`🔥 Background: Proxy API request failed with status: ${response.status}`);
-        throw new Error(`API request failed with status: ${response.status} ${response.statusText}`);
-      }
+      console.log("🔥 Background: Sending fetch request...");
       
-      return response.json().catch(err => {
-        console.error("🔥 Background: Error parsing JSON response", err);
-        throw new Error("Invalid JSON response from API");
-      });
-    })
-    .then(data => {
-      console.log("🔥 Background: Proxy API request success", data);
-      
-      if (!data) {
-        sendResponse({ success: false, error: "Empty response from API" });
-        return;
-      }
-      
-      sendResponse({ success: true, data });
-    })
-    .catch(error => {
-      clearTimeout(timeoutId);
-      
-      console.error("🔥 Background: Proxy API request error", error);
-      
-      // Handle specific error types
-      let errorMessage = error.message || "Unknown error occurred";
-      
-      if (error.name === 'AbortError') {
-        errorMessage = "Request timed out after 30 seconds";
-      } else if (errorMessage.includes('NetworkError')) {
-        errorMessage = "Network error: Please check your internet connection";
-      } else if (errorMessage.includes('CORS')) {
-        errorMessage = "CORS error: The API server rejected the request";
-      }
-      
-      sendResponse({ 
-        success: false, 
-        error: errorMessage,
-        details: {
-          name: error.name,
-          message: error.message,
-          stack: error.stack
-        }
-      });
-    });
+      fetch(url, fetchOptions)
+        .then(response => {
+          clearTimeout(timeoutId);
+          console.log("🔥 Background: Response received, status:", response.status);
+          console.log("🔥 Background: Response content-type:", response.headers.get('content-type'));
+          
+          if (!response.ok) {
+            console.error(`🔥 Background: Proxy API request failed with status: ${response.status}`);
+            throw new Error(`API request failed with status: ${response.status} ${response.statusText}`);
+          }
+          
+          return response.json().catch(err => {
+            console.error("🔥 Background: Error parsing JSON response", err);
+            return response.text().then(text => {
+              console.error("🔥 Background: Raw response text:", text.substring(0, 500));
+              throw new Error("Invalid JSON response from API: " + text.substring(0, 100));
+            });
+          });
+        })
+        .then(data => {
+          console.log("🔥 Background: Proxy API request success", data);
+          
+          if (!data) {
+            sendResponse({ success: false, error: "Empty response from API" });
+            return;
+          }
+          
+          sendResponse({ success: true, data });
+        })
+        .catch(error => {
+          clearTimeout(timeoutId);
+          
+          console.error("🔥 Background: Proxy API request error", error);
+          
+          // Handle specific error types
+          let errorMessage = error.message || "Unknown error occurred";
+          
+          if (error.name === 'AbortError') {
+            errorMessage = "Request timed out after 30 seconds";
+          } else if (errorMessage.includes('NetworkError')) {
+            errorMessage = "Network error: Please check your internet connection";
+          } else if (errorMessage.includes('CORS')) {
+            errorMessage = "CORS error: The API server rejected the request";
+          }
+          
+          sendResponse({ 
+            success: false, 
+            error: errorMessage,
+            details: {
+              name: error.name,
+              message: error.message,
+              stack: error.stack
+            }
+          });
+        });
+    }
     
     // Return true to indicate we'll send a response asynchronously
     return true;
@@ -339,6 +421,77 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const tab = tabs[0];
       console.log("🔥 Background: Tab info", tab);
       sendResponse({ success: true, tab });
+    });
+    
+    return true; // Keep message channel open for async response
+  }
+});
+
+// Icon change on theme update
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "setIconByTheme") {
+    const theme = message.theme || "default";
+    
+    const ICONS = {
+      default: {
+        "16": "extensionLogo.png",
+        "48": "extensionLogo.png", 
+        "128": "extensionLogo.png"
+      },
+      red: {
+        "16": "red.png",
+        "48": "red.png",
+        "128": "red.png"
+      },
+      orange: {
+        "16": "orange.png",
+        "48": "orange.png",
+        "128": "orange.png"
+      },
+      darkblue: {
+        "16": "darkblue.png",
+        "48": "darkblue.png",
+        "128": "darkblue.png"
+      },
+      green: {
+        "16": "green.png",
+        "48": "green.png",
+        "128": "green.png"
+      },
+      purple: {
+        "16": "purple.png",
+        "48": "purple.png",
+        "128": "purple.png"
+      },
+      teal: {
+        "16": "teal.png",
+        "48": "teal.png",
+        "128": "teal.png"
+      },
+      yellow: {
+        "16": "yellow.png",
+        "48": "yellow.png",
+        "128": "yellow.png"
+      }
+    };
+
+    const iconSet = ICONS[theme] || ICONS.default;
+
+    chrome.action.setIcon({ path: iconSet }, () => {
+      if (chrome.runtime.lastError) {
+        console.warn("⚠️ Failed to set icon:", chrome.runtime.lastError.message);
+      }
+    });
+  }
+  
+  // Forward theme change messages to all tabs for bubble mode
+  if (message.type === "themeChanged") {
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        chrome.tabs.sendMessage(tab.id, message).catch(() => {
+          // Ignore errors for tabs that don't have content scripts
+        });
+      });
     });
   }
 });

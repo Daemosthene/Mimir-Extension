@@ -1,0 +1,86 @@
+{
+  "manifest_version": 3,
+  "name": "Mimir",
+  "version": "4.0.0",
+  "description": "An AI assistant for summarizing, explaining, and refining text.",
+  "permissions": [
+    "contextMenus",
+    "scripting",
+    "activeTab",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.bundle.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "extensionLogo.png"
+  },
+  "icons": {
+    "16": "extensionLogo.png",
+    "48": "extensionLogo.png",
+    "128": "extensionLogo.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.bundle.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ],
+  "commands": {
+    "summarize": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+1"
+      },
+      "description": "Run Summarize"
+    },
+    "explain": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+2"
+      },
+      "description": "Run Explain Like I'm 5"
+    },
+    "cite": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+3"
+      },
+      "description": "Run Citation Finder"
+    },
+    "translate": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+4"
+      },
+      "description": "Run Translate Text"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "norse.bold.otf",
+        "extensionLogo.png",
+        "prompt-editor.html",
+        "prompt-editor.js",
+        "editor.css",
+        "humanizer.js",
+        "compromise.js",
+        "compromise-sentences.min.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://mimir-server-daemosthene-mimir-extension.vercel.app https://api.stripe.com https://checkout.stripe.com; media-src 'self' blob:"
+  }
+}

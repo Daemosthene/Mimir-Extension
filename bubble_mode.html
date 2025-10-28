@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mimir Bubble Mode</title>
+    <style>
+        :root {
+            --accent-color: #4287f5; /* default */
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1f1f1f;
+            color: #fff;
+        }
+        
+        .bubble-container {
+            width: 300px; /* Reduced from 320px */
+            min-height: 210px; /* Reduced from 230px */
+            max-height: 310px; /* Reduced from 330px */
+            background-color: #2a2a2a;
+            border: 2px solid var(--accent-color);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            padding: 18px; /* Reduced from 20px */
+            box-sizing: border-box;
+            position: relative;
+            cursor: grab;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .bubble-container:active {
+            cursor: grabbing;
+        }
+        
+        .bubble-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .bubble-tools-grid {
+            position: relative;
+            flex: 1;
+            min-height: 135px; /* Reduced from 150px */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .bubble-tool-btn {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 18px;
+            user-select: none;
+            border: none;
+            color: white;
+        }
+        
+        .bubble-tool-btn:hover {
+            transform: scale(1.1);
+            background-color: var(--accent-color);
+            filter: brightness(1.2);
+        }
+        
+        /* White and black theme support for bubble buttons */
+        :root[style*="--accent-color: #ffffff"] .bubble-tool-btn {
+            color: #000000 !important;
+        }
+        
+        :root[style*="--accent-color: #ffffff"] .bubble-header {
+            color: #ffffff !important;
+        }
+        
+        :root[style*="--accent-color: #000000"] .bubble-tool-btn {
+            border: 1px solid #ffffff !important;
+            color: #ffffff !important;
+        }
+        
+        :root[style*="--accent-color: #000000"] .bubble-tool-btn:hover {
+            border: 1px solid #ffffff !important;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            z-index: 10;
+        }
+        
+        .close-btn:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="bubble-container" id="bubbleMode">
+        <button class="close-btn" id="closeBtn">&times;</button>
+        <div class="bubble-header">Bubble Mode</div>
+        
+        <div class="bubble-tools-grid">
+            <!-- Tool buttons will be dynamically positioned here -->
+            <!-- First row -->
+            <button class="bubble-tool-btn" data-tool="Summarize" title="Summarize: Get a context-aware summary of the selected text." style="left: 12px; top: 15px;">📄</button>
+            <button class="bubble-tool-btn" data-tool="Explain Like I'm 5" title="Explain Like I'm 5: Simplify the selected text so a 5-year-old could understand it." style="left: 58px; top: 15px;">🧒</button>
+            <button class="bubble-tool-btn" data-tool="Translate Text" title="Translate Text: Translate selected or full-page text from any language into English." style="left: 104px; top: 15px;">🌐</button>
+            <button class="bubble-tool-btn" data-tool="Definition" title="Definition: Define a selected word or phrase and optionally simplify it." style="left: 150px; top: 15px;">📖</button>
+            <button class="bubble-tool-btn" data-tool="Turn Professional" title="Turn Professional: Polish informal writing into professional, work-ready prose." style="left: 196px; top: 15px;">💼</button>
+            <button class="bubble-tool-btn" data-tool="Socratic Review" title="Socratic Review: Ask critical questions to clarify and challenge your thinking." style="left: 242px; top: 15px;">🤔</button>
+            
+            <!-- Second row -->
+            <button class="bubble-tool-btn" data-tool="Daily Brief" title="Daily Brief: Summarize yesterday's notes, list tasks, and suggest what to work on." style="left: 12px; top: 67px;">📅</button>
+            <button class="bubble-tool-btn" data-tool="Citation Finder" title="Citation Finder: Suggest sources or references related to the selected content." style="left: 58px; top: 67px;">📚</button>
+            <button class="bubble-tool-btn" data-tool="Flashcard Generator" title="Flashcard Generator: Turn notes or articles into tab-separated, Anki-compatible flashcards." style="left: 104px; top: 67px;">🎴</button>
+            <button class="bubble-tool-btn" data-tool="Upload Image" title="Upload Image: Upload an image to extract text and find answers." style="left: 150px; top: 67px;">📷</button>
+            <button class="bubble-tool-btn" data-tool="Enter Prompt" title="Enter Prompt: Enter a custom prompt for AI processing." style="left: 196px; top: 67px;">📝</button>
+            <button class="bubble-tool-btn" data-tool="Blink" title="Blink: Get quick answers to your questions." style="left: 242px; top: 67px;">⚡</button>
+            
+            <!-- Centered AI Detector button in the third row -->
+            <button class="bubble-tool-btn" data-tool="AI Detector" title="AI Detector: Detect if text was generated by AI or written by humans." style="left: 132px; top: 119px;">🤖</button>
+        </div>
+    </div>
+    
+    <script src="bubble_mode.js"></script>
+</body>
+</html>

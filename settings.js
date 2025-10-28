@@ -6,7 +6,9 @@ const themeColors = {
   green:  "#407855",
   purple: "#8764B8",
   teal:   "#038387",
-  yellow: "#CEA230"
+  yellow: "#CEA230",
+  white:  "#ffffff",
+  black:  "#000000"
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -51,6 +53,19 @@ document.addEventListener("DOMContentLoaded", () => {
 function applyThemeColor(themeKey) {
   const color = themeColors[themeKey] || themeColors.default; // fallback to blue
   document.documentElement.style.setProperty("--accent-color", color);
+  
+  // For white and black themes, keep text WHITE (not the theme color)
+  if (color === "#ffffff" || color === "#000000") {
+    const textElements = document.querySelectorAll('.settings-title, .label');
+    textElements.forEach(element => {
+      element.style.color = '#ffffff';
+    });
+  } else {
+    const textElements = document.querySelectorAll('.settings-title, .label');
+    textElements.forEach(element => {
+      element.style.color = color;
+    });
+  }
 }
 
 function showMiniPopup(targetEl, message) {
