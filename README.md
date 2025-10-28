@@ -1,8 +1,8 @@
 # Mimir v3.0.0 - AI-Powered Browser Extension
 
-Mimir is an intelligent Chrome extension that provides AI-powered tools for text analysis, summarization, translation, and productivity enhancement directly in your browser.
+Mimir is a minimally invasive intuitive browser extension that provides AI-powered tools for analyzing text, summarizing, translating, and increasing your productivity directly in your browser.
 
-## 🚀 Features
+## Features
 
 ### Core AI Tools
 - **Summarize** - Generate concise summaries of selected text or entire pages
@@ -20,14 +20,14 @@ Mimir is an intelligent Chrome extension that provides AI-powered tools for text
 - **Enter Prompt** - Custom AI interactions with your own prompts
 - **Blink** - Quick text analysis and insights
 
-### Smart Features
+### intelligent Features
 - **Context Menu Integration** - Right-click on any text to access tools
 - **Sidebar Interface** - Clean, integrated workspace within any webpage
-- **Theme Customization** - Multiple color themes (default, red, orange, darkblue, green, purple, teal, yellow)
+- **Theme Customization** - Multiple color themes (default, red, orange, darkblue, green, purple, teal, yellow, black, white)
 - **Text Humanization** - Convert AI-generated text to more natural language
 - **Prompt Editor** - Customize and manage AI prompts
 
-## 📦 Installation
+## Installation
 
 1. Download or clone this repository
 2. Open Chrome and navigate to `chrome://extensions/`
@@ -35,7 +35,7 @@ Mimir is an intelligent Chrome extension that provides AI-powered tools for text
 4. Click "Load unpacked" and select the extension directory
 5. The Mimir extension icon will appear in your toolbar
 
-## 🔧 Usage
+## Usage
 
 ### Basic Usage
 1. **Select Text**: Highlight any text on a webpage
@@ -49,11 +49,7 @@ Mimir is an intelligent Chrome extension that provides AI-powered tools for text
   - Pro upgrade options
   - Theme selection
 
-### Keyboard Shortcuts
-- Tools integrate seamlessly with browser navigation
-- Sidebar can be toggled and repositioned as needed
-
-## 💎 Pro Features
+## Pro Features
 
 Mimir offers both free and Pro tiers:
 
@@ -69,10 +65,10 @@ Mimir offers both free and Pro tiers:
 
 **Upgrade to Pro** through the extension popup for full access to all features.
 
-## 🎨 Customization
+## Customization
 
 ### Themes
-Choose from 8 beautiful themes:
+Choose from 10 themes to suit your style:
 - Default (Blue)
 - Red
 - Orange
@@ -81,6 +77,8 @@ Choose from 8 beautiful themes:
 - Purple
 - Teal
 - Yellow
+- black
+- white
 
 ### Settings
 - Customize prompt templates
@@ -88,7 +86,7 @@ Choose from 8 beautiful themes:
 - Manage tool availability
 - Configure display options
 
-## 🛠 Technical Details
+## Technical Details
 
 ### Architecture
 - **Manifest V3** compatible
@@ -104,6 +102,3 @@ Choose from 8 beautiful themes:
 
 ### File Structure
 ```
-<userPrompt>
-Provide the fully rewritten file, incorporating the suggested code change. You must produce the complete file.
-</userPrompt>
